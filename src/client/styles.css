@@ -755,12 +755,3 @@ unit-display .tutorial-highlight::after {
   background: #ef4444;
 }
 
-/* Grand Strategy command is an in-game-only planning overlay.
- * Do not depend on Tailwind's arbitrary parent variants to reveal it. */
-grand-strategy-command {
-  display: none;
-}
-
-body.in-game grand-strategy-command {
-  display: block;
-}
