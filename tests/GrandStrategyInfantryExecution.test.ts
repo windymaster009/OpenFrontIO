@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { GameType, UnitType } from "@openfront/engine-api/game/GameTypes";
-import { DeployInfantryExecution } from "../../packages/engine/src/execution/DeployInfantryExecution";
-import { MoveInfantryExecution } from "../../packages/engine/src/execution/MoveInfantryExecution";
-import type { Game, Player, Unit } from "../../packages/engine/src/game/Game";
+import { DeployInfantryExecution } from "../packages/engine/src/execution/DeployInfantryExecution";
+import { MoveInfantryExecution } from "../packages/engine/src/execution/MoveInfantryExecution";
+import type { Game, Player, Unit } from "../packages/engine/src/game/Game";
 
 function makeDeploy(grandStrategy: boolean, validOwner = true) {
   let available = 10000;
