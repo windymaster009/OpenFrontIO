@@ -8,6 +8,8 @@ import { BoatRetreatExecutionSnapshot } from "../execution/BoatRetreatExecution"
 import { CityExecutionSnapshot } from "../execution/CityExecution";
 import { ConstructionExecutionSnapshot } from "../execution/ConstructionExecution";
 import { DefensePostExecutionSnapshot } from "../execution/DefensePostExecution";
+import { DeployInfantryExecutionSnapshot } from "../execution/DeployInfantryExecution";
+import { MoveInfantryExecutionSnapshot } from "../execution/MoveInfantryExecution";
 import { DeleteUnitExecutionSnapshot } from "../execution/DeleteUnitExecution";
 import { DonateGoldExecutionSnapshot } from "../execution/DonateGoldExecution";
 import { DonateTroopsExecutionSnapshot } from "../execution/DonateTroopExecution";
@@ -62,6 +64,8 @@ export const EXECUTION_SNAPSHOT_TYPES = [
   CityExecutionSnapshot,
   ConstructionExecutionSnapshot,
   DefensePostExecutionSnapshot,
+  DeployInfantryExecutionSnapshot,
+  MoveInfantryExecutionSnapshot,
   DeleteUnitExecutionSnapshot,
   DonateGoldExecutionSnapshot,
   DonateTroopsExecutionSnapshot,
