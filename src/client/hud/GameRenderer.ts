@@ -33,6 +33,7 @@ import { EmojiTable } from "./layers/EmojiTable";
 import { EventsDisplay } from "./layers/EventsDisplay";
 import { GameLeftSidebar } from "./layers/GameLeftSidebar";
 import { GameRightSidebar } from "./layers/GameRightSidebar";
+import { GrandStrategyCommand } from "./layers/GrandStrategyCommand";
 import { HeadsUpMessage } from "./layers/HeadsUpMessage";
 import { ImmunityTimer } from "./layers/ImmunityTimer";
 import { InGamePromo } from "./layers/InGamePromo";
@@ -91,6 +92,12 @@ export function createRenderer(
   buildMenu.eventBus = eventBus;
   buildMenu.uiState = uiState;
   buildMenu.transformHandler = transformHandler;
+
+  // The planner is opt-in and owns no authoritative simulation state.
+  const grandStrategyCommand = document.querySelector(
+    "grand-strategy-command",
+  ) as GrandStrategyCommand | null;
+  if (grandStrategyCommand) grandStrategyCommand.game = game;
 
   const gameLeftSidebar = document.querySelector(
     "game-left-sidebar",
@@ -340,6 +347,7 @@ export function createRenderer(
     attacksDisplay,
     chatDisplay,
     buildMenu,
+    ...(grandStrategyCommand ? [grandStrategyCommand] : []),
     new MainRadialMenu(
       eventBus,
       game,
