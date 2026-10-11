@@ -27,6 +27,8 @@ import { NoOpExecution } from "./NoOpExecution";
 import { PauseExecution } from "./PauseExecution";
 import { QuickChatExecution } from "./QuickChatExecution";
 import { RetreatExecution } from "./RetreatExecution";
+import { DeployInfantryExecution } from "./DeployInfantryExecution";
+import { MoveInfantryExecution } from "./MoveInfantryExecution";
 import { SpawnExecution } from "./SpawnExecution";
 import { TargetPlayerExecution } from "./TargetPlayerExecution";
 import { TransportShipExecution } from "./TransportShipExecution";
@@ -78,6 +80,10 @@ export class Executor {
         return new RetreatExecution(player, intent.attackID);
       case "cancel_boat":
         return new BoatRetreatExecution(player, intent.unitID);
+      case "deploy_infantry":
+        return new DeployInfantryExecution(player, intent.tile);
+      case "move_infantry":
+        return new MoveInfantryExecution(player, intent.unitId, intent.tile);
       case "move_warship":
         return new MoveWarshipExecution(player, intent.unitIds, intent.tile);
       case "spawn":
