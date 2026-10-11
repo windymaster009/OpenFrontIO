@@ -10,7 +10,7 @@ describe("Grand Strategy command overlay", () => {
     document.body.innerHTML = "";
     panel = document.createElement("grand-strategy-command") as GrandStrategyCommand;
     panel.game = {
-      config: () => ({ isReplay: () => false }),
+      config: () => ({ isReplay: () => false, gameConfig: () => ({ grandStrategy: false }) }),
     } as unknown as GameView;
     document.body.append(panel);
     panel.init();
@@ -70,7 +70,7 @@ describe("Grand Strategy command overlay", () => {
   });
 
   it("does not render for replays", async () => {
-    panel.game = { config: () => ({ isReplay: () => true }) } as unknown as GameView;
+    panel.game = { config: () => ({ isReplay: () => true, gameConfig: () => ({ grandStrategy: false }) }) } as unknown as GameView;
     await panel.updateComplete;
     expect(panel.shadowRoot?.querySelector(".panel")).toBeNull();
     panel.open = true;
