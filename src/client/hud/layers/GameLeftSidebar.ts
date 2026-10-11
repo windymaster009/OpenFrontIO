@@ -3,13 +3,14 @@ import { assetUrl } from "@openfront/shared/AssetUrls";
 import type { EventBus } from "@openfront/shared/EventBus";
 import { Colord } from "colord";
 import { html, LitElement } from "lit";
+import { keyed } from "lit/directives/keyed.js";
 import { customElement, property, query, state } from "lit/decorators.js";
 import type { Controller } from "../../Controller";
 import { Platform } from "../../Platform";
 import { themeProvider } from "../../theme/ThemeProvider";
 import { getTranslatedPlayerTeamLabel, translateText } from "../../Utils";
 import type { GameView } from "../../view";
-import type { GrandStrategyCommand } from "./GrandStrategyCommand";
+import "./GrandStrategyCommand";
 import { ImmunityBarVisibleEvent } from "./ImmunityTimer";
 import "./PlayerStats";
 import type { PlayerStats } from "./PlayerStats";
@@ -32,6 +33,10 @@ export class GameLeftSidebar extends LitElement implements Controller {
   @state()
   private isVisible = false;
   @state()
+  private commandOpen = false;
+  @state()
+  private commandGeneration = 0;
+  @state()
   private isPlayerTeamLabelVisible = false;
   @state()
   private playerTeam: Team | null = null;
@@ -53,6 +58,9 @@ export class GameLeftSidebar extends LitElement implements Controller {
 
   init() {
     this.isVisible = true;
+    // A new match creates a fresh local planner, with no stale army roster.
+    this.commandOpen = false;
+    this.commandGeneration++;
     this.eventBus?.on(SpawnBarVisibleEvent, (e) => {
       this.spawnBarVisible = e.visible;
     });
@@ -106,16 +114,9 @@ export class GameLeftSidebar extends LitElement implements Controller {
     this.isTeamStatsShown = !this.isTeamStatsShown;
   }
 
-  /** Open the planning overlay through the existing HUD, not a floating launcher. */
+  /** Both launcher and planner belong to this sidebar's Lit render tree. */
   private toggleGrandStrategy(): void {
-    const panel = document.querySelector(
-      "grand-strategy-command",
-    ) as GrandStrategyCommand | null;
-    if (!panel) {
-      console.warn("Grand Strategy command host not found");
-      return;
-    }
-    panel.togglePanel();
+    this.commandOpen = !this.commandOpen;
   }
 
   private get isTeamGame(): boolean {
@@ -139,7 +140,8 @@ export class GameLeftSidebar extends LitElement implements Controller {
                   class="shrink-0 rounded-md border border-amber-500/70 bg-amber-900/40 hover:bg-amber-800/60 px-2 py-1 text-[11px] font-bold text-amber-100 transition-colors"
                   title="Open experimental Grand Strategy army planner"
                   aria-label="Grand Strategy military command"
-                  @click=${this.toggleGrandStrategy}
+                  aria-expanded=${this.commandOpen}
+                  @click=${() => this.toggleGrandStrategy()}
                 >⚑ Command</button>
               `
             : null}
@@ -241,6 +243,14 @@ export class GameLeftSidebar extends LitElement implements Controller {
         </div>
         <slot></slot>
       </aside>
+      ${keyed(
+        this.commandGeneration,
+        html`<grand-strategy-command
+          .game=${this.game}
+          .open=${this.commandOpen}
+          @grand-strategy-close=${() => (this.commandOpen = false)}
+        ></grand-strategy-command>`,
+      )}
     `;
   }
 }
