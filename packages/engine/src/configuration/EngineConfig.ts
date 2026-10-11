@@ -358,6 +358,7 @@ export class EngineConfig extends Config {
           UnitType.Factory,
           UnitType.Port,
         );
+      case UnitType.InfantryDivision:
       case UnitType.TransportShip:
       case UnitType.Shell:
       case UnitType.SAMMissile:
