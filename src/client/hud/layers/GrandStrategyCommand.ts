@@ -1,6 +1,5 @@
 import { css, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import type { Controller } from "../../Controller";
 import type { GameView } from "../../view";
 import {
   addArmy,
@@ -27,31 +26,27 @@ import {
  * creating a division does not spend troops, gold, or affect multiplayer.
  */
 @customElement("grand-strategy-command")
-export class GrandStrategyCommand extends LitElement implements Controller {
+export class GrandStrategyCommand extends LitElement {
   @property({ attribute: false }) public game: GameView | null = null;
-  @state() private expanded = false;
+  @property({ attribute: false }) public open = false;
   @state() private roster: ArmyRoster = emptyArmyRoster();
   @state() private selectedArmyId: string | null = null;
 
+  /** Reset the local planner when a new match starts. */
   init(): void {
-    // New match = new planning session. Never carry armies into another match.
-    this.expanded = false;
+    this.open = false;
     this.selectedArmyId = null;
     this.roster = emptyArmyRoster();
-    this.style.display = "none";
-  }
-
-  /** Invoked by the existing, always-visible in-game leaderboard toolbar. */
-  public togglePanel(): void {
-    if (this.game === null || this.game.config().isReplay()) return;
-    this.expanded = !this.expanded;
-    // Keep the host visible even when a generated utility class hides it.
-    this.style.display = this.expanded ? "block" : "none";
   }
 
   private closePanel(): void {
-    this.expanded = false;
-    this.style.display = "none";
+    // The leaderboard owns visibility. Let it update the reactive open prop.
+    this.dispatchEvent(
+      new CustomEvent("grand-strategy-close", {
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private createArmy(): void {
@@ -78,8 +73,7 @@ export class GrandStrategyCommand extends LitElement implements Controller {
   static styles = css`
     :host {
       position: fixed;
-      /* The player leaderboard occupies the upper-left corner (z-900).
-         Place the command launcher beside it, above both map and sidebar. */
+      /* Floating panel is a sibling of the leaderboard, not its descendant. */
       z-index: 1100;
       left: max(320px, env(safe-area-inset-left));
       top: calc(12px + env(safe-area-inset-top));
@@ -154,7 +148,7 @@ export class GrandStrategyCommand extends LitElement implements Controller {
 
   render() {
     // Gameplay-only experimental planning UI; never shown on replays.
-    if (this.game === null || this.game.config().isReplay() || !this.expanded) return nothing;
+    if (this.game === null || this.game.config().isReplay() || !this.open) return nothing;
     const visible = divisionsInArmy(this.roster, this.selectedArmyId);
     const selected = this.roster.armies.find((a) => a.id === this.selectedArmyId);
     return html`
