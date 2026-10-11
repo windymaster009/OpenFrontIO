@@ -64,9 +64,11 @@ export class GrandStrategyCommand extends LitElement implements Controller {
   static styles = css`
     :host {
       position: fixed;
-      z-index: 215;
-      left: max(12px, env(safe-area-inset-left));
-      top: calc(78px + env(safe-area-inset-top));
+      /* The player leaderboard occupies the upper-left corner (z-900).
+         Place the command launcher beside it, above both map and sidebar. */
+      z-index: 1100;
+      left: max(320px, env(safe-area-inset-left));
+      top: calc(12px + env(safe-area-inset-top));
       pointer-events: none;
       font: 13px/1.4 Inter, system-ui, sans-serif;
       color: #eee9d7;
@@ -135,9 +137,15 @@ export class GrandStrategyCommand extends LitElement implements Controller {
     .division .controls { display: flex; align-items: center; gap: 6px; }
     .division select { max-width: 120px; font-size: 11px; }
     .empty { padding: 16px; border: 1px dashed #5d6556; color: #b5bcae; border-radius: 6px; }
-    @media (max-width: 650px) {
-      :host { top: calc(62px + env(safe-area-inset-top)); }
-      .panel { max-height: 67vh; }
+    @media (max-width: 850px) {
+      /* On compact screens the map sidebar may fill the top edge.
+         Dock the launcher above the bottom HUD instead. */
+      :host {
+        left: max(12px, env(safe-area-inset-left));
+        top: auto;
+        bottom: calc(175px + env(safe-area-inset-bottom));
+      }
+      .panel { max-height: min(57vh, 520px); }
     }
   `;
 
