@@ -1,0 +1,112 @@
+/*
+ * Dark Tactical homepage skin.
+ * Intentionally scoped to the homepage: lobby logic, controls, modal behavior,
+ * accessibility labels, translations and in-game HUD remain untouched.
+ */
+body:not(.in-game) #page-play {
+  --tactical-ink: #0b1110;
+  --tactical-panel: #17211d;
+  --tactical-line: rgba(180, 198, 148, .23);
+  --tactical-gold: #d5b76b;
+  --tactical-muted: #aab7a6;
+  position: relative;
+  isolation: isolate;
+  padding-top: clamp(12px, 2.4vw, 32px);
+  padding-bottom: clamp(24px, 4vw, 60px);
+}
+
+body:not(.in-game) #page-play::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  inset: 0 -12vw -5rem;
+  background:
+    radial-gradient(ellipse 75% 45% at 50% 5%, rgba(91, 119, 77, .20), transparent 72%),
+    repeating-linear-gradient(0deg, transparent 0 47px, rgba(172, 191, 153, .045) 48px 49px),
+    repeating-linear-gradient(90deg, transparent 0 47px, rgba(172, 191, 153, .045) 48px 49px),
+    linear-gradient(165deg, #141f1b 0%, #0b1110 72%);
+  border-bottom: 1px solid var(--tactical-line);
+}
+
+body:not(.in-game) #page-play::after {
+  content: "TACTICAL COMMAND  /  OPERATIONS";
+  position: relative;
+  order: 10;
+  align-self: center;
+  margin-top: 1.25rem;
+  color: rgba(213, 183, 107, .52);
+  font: 600 10px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .28em;
+  pointer-events: none;
+}
+
+body:not(.in-game) #page-play news-box > div,
+body:not(.in-game) #page-play .bg-surface {
+  background-color: rgba(23, 33, 29, .95);
+}
+
+body:not(.in-game) #page-play news-box > div {
+  border: 1px solid var(--tactical-line);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, .18);
+}
+
+body:not(.in-game) #page-play .text-malibu-blue {
+  color: var(--tactical-gold);
+}
+
+body:not(.in-game) #page-play game-mode-selector {
+  --color-malibu-blue: #687e58;
+  --color-aquarius: #82996b;
+  --color-cyber-yellow: #d5b76b;
+  --color-surface: #17211d;
+  --shadow-action-card-hover: 0 0 0 1px rgba(213, 183, 107, .65), 0 15px 32px rgba(0, 0, 0, .35);
+  display: block;
+}
+
+body:not(.in-game) #page-play game-mode-selector button,
+body:not(.in-game) #page-play game-mode-selector [role="button"] {
+  border-radius: 9px;
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease, border-color .2s ease;
+}
+
+body:not(.in-game) #page-play game-mode-selector button:focus-visible,
+body:not(.in-game) #page-play game-mode-selector [role="button"]:focus-visible {
+  outline: 3px solid var(--tactical-gold);
+  outline-offset: 3px;
+}
+
+body:not(.in-game) #page-play game-mode-selector button:not(:disabled):hover {
+  box-shadow: 0 0 0 1px rgba(213, 183, 107, .42), 0 10px 25px rgba(0, 0, 0, .3);
+}
+
+body:not(.in-game) #page-play username-input {
+  color: #f2f2e6;
+}
+
+body:not(.in-game) #page-play .border-white\/10 {
+  border-color: var(--tactical-line);
+}
+
+@media (max-width: 1023px) {
+  body:not(.in-game) #page-play {
+    padding-top: 0;
+  }
+  body:not(.in-game) #page-play::before {
+    inset: 0 -2rem -3rem;
+    background:
+      radial-gradient(ellipse 110% 40% at 50% 12%, rgba(91,119,77,.16), transparent 75%),
+      linear-gradient(165deg, #141f1b, #0b1110);
+  }
+  body:not(.in-game) #page-play::after {
+    font-size: 8px;
+    letter-spacing: .17em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:not(.in-game) #page-play game-mode-selector button,
+  body:not(.in-game) #page-play game-mode-selector [role="button"] {
+    transition: none;
+  }
+}
