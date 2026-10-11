@@ -100,6 +100,14 @@ export class SendSpawnIntentEvent implements GameEvent {
   constructor(public readonly tile: TileRef) {}
 }
 
+export class DeployInfantryIntentEvent implements GameEvent {
+  constructor(public readonly tile: TileRef) {}
+}
+
+export class MoveInfantryIntentEvent implements GameEvent {
+  constructor(public readonly unitId: number, public readonly tile: TileRef) {}
+}
+
 export class SendAttackIntentEvent implements GameEvent {
   constructor(
     public readonly targetID: PlayerID | null,
@@ -318,6 +326,12 @@ export class Transport {
       this.onSendEmbargoAllIntent(e),
     );
     this.subscribe(BuildUnitIntentEvent, (e) => this.onBuildUnitIntent(e));
+    this.subscribe(DeployInfantryIntentEvent, (e) => {
+      this.sendIntent({ type: "deploy_infantry", tile: e.tile });
+    });
+    this.subscribe(MoveInfantryIntentEvent, (e) => {
+      this.sendIntent({ type: "move_infantry", unitId: e.unitId, tile: e.tile });
+    });
 
     this.subscribe(PauseGameIntentEvent, (e) => this.onPauseGameIntent(e));
     this.subscribe(SendWinnerEvent, (e) => this.onSendWinnerEvent(e));
