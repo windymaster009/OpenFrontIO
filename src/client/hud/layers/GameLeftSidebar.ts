@@ -9,6 +9,7 @@ import { Platform } from "../../Platform";
 import { themeProvider } from "../../theme/ThemeProvider";
 import { getTranslatedPlayerTeamLabel, translateText } from "../../Utils";
 import type { GameView } from "../../view";
+import type { GrandStrategyCommand } from "./GrandStrategyCommand";
 import { ImmunityBarVisibleEvent } from "./ImmunityTimer";
 import "./PlayerStats";
 import type { PlayerStats } from "./PlayerStats";
@@ -105,6 +106,18 @@ export class GameLeftSidebar extends LitElement implements Controller {
     this.isTeamStatsShown = !this.isTeamStatsShown;
   }
 
+  /** Open the planning overlay through the existing HUD, not a floating launcher. */
+  private toggleGrandStrategy(): void {
+    const panel = document.querySelector(
+      "grand-strategy-command",
+    ) as GrandStrategyCommand | null;
+    if (!panel) {
+      console.warn("Grand Strategy command host not found");
+      return;
+    }
+    panel.togglePanel();
+  }
+
   private get isTeamGame(): boolean {
     return this.game?.config().gameConfig().gameMode === GameMode.Team;
   }
@@ -117,7 +130,19 @@ export class GameLeftSidebar extends LitElement implements Controller {
         }`}
         style="margin-top: ${this.barOffset}px;"
       >
-        <div class="flex items-center gap-4 xl:gap-6 text-white">
+        <div class="flex items-center gap-2 xl:gap-3 text-white">
+          ${this.game !== null && !this.game.config().isReplay()
+            ? html`
+                <button
+                  type="button"
+                  data-testid="grand-strategy-open"
+                  class="shrink-0 rounded-md border border-amber-500/70 bg-amber-900/40 hover:bg-amber-800/60 px-2 py-1 text-[11px] font-bold text-amber-100 transition-colors"
+                  title="Open experimental Grand Strategy army planner"
+                  aria-label="Grand Strategy military command"
+                  @click=${this.toggleGrandStrategy}
+                >⚑ Command</button>
+              `
+            : null}
           <div
             class="cursor-pointer p-0.5 bg-gray-700/50 hover:bg-gray-600 border rounded-md border-slate-500 transition-colors"
             @click=${this.togglePlayerStats}
