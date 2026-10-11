@@ -191,6 +191,7 @@ function unitTypeGroup<T extends readonly UnitType[]>(types: T) {
 
 export enum UnitType {
   TransportShip = "Transport",
+  InfantryDivision = "Infantry Division",
   Warship = "Warship",
   Shell = "Shell",
   SAMMissile = "SAMMissile",
