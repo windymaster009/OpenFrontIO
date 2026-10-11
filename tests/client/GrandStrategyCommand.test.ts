@@ -19,16 +19,15 @@ describe("Grand Strategy command overlay", () => {
 
   it("remains opt-in and reveals only the planner when opened", async () => {
     expect(panel.shadowRoot?.querySelector(".panel")).toBeNull();
-    expect(panel.style.display).toBe("none");
-    panel.togglePanel();
-    expect(panel.style.display).toBe("block");
+    expect(panel.shadowRoot?.querySelector(".panel")).toBeNull();
+    panel.open = true;
     await panel.updateComplete;
     expect(panel.shadowRoot?.querySelector(".panel")?.textContent).toContain("Military High Command");
     expect(panel.shadowRoot?.querySelector(".note")?.textContent).toContain("do not yet control troops");
   });
 
   it("creates an army and divisions and groups them in the current army", async () => {
-    panel.togglePanel();
+    panel.open = true;
     await panel.updateComplete;
     const addArmyButton = [...panel.shadowRoot!.querySelectorAll("button")].find(
       (button) => button.textContent?.includes("New army"),
@@ -46,7 +45,7 @@ describe("Grand Strategy command overlay", () => {
   });
 
   it("resets the planning session when a new game initializes", async () => {
-    panel.togglePanel();
+    panel.open = true;
     await panel.updateComplete;
     const addArmyButton = [...panel.shadowRoot!.querySelectorAll("button")].find(
       (button) => button.textContent?.includes("New army"),
@@ -56,16 +55,26 @@ describe("Grand Strategy command overlay", () => {
     panel.init();
     await panel.updateComplete;
     expect(panel.shadowRoot?.querySelector(".panel")).toBeNull();
-    panel.togglePanel();
+    panel.open = true;
     await panel.updateComplete;
     expect(panel.shadowRoot?.querySelectorAll(".army")).toHaveLength(1);
+  });
+
+  it("emits a close request to its parent without mutating gameplay state", async () => {
+    panel.open = true;
+    await panel.updateComplete;
+    const close = vi.fn();
+    panel.addEventListener("grand-strategy-close", close);
+    (panel.shadowRoot?.querySelector(".subbtn") as HTMLButtonElement).click();
+    expect(close).toHaveBeenCalledOnce();
   });
 
   it("does not render for replays", async () => {
     panel.game = { config: () => ({ isReplay: () => true }) } as unknown as GameView;
     await panel.updateComplete;
     expect(panel.shadowRoot?.querySelector(".panel")).toBeNull();
-    expect(() => panel.togglePanel()).not.toThrow();
+    panel.open = true;
+    await panel.updateComplete;
     expect(panel.shadowRoot?.querySelector(".panel")).toBeNull();
   });
 });
