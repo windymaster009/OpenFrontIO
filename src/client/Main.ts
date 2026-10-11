@@ -166,6 +166,7 @@ import "./components/PlayPage";
 import "./components/baseComponents/Button";
 import "./components/baseComponents/Modal";
 import "./styles.css";
+import "./styles/themes/dark-tactical-home.css";
 import "./styles/core/typography.css";
 import "./styles/core/variables.css";
 import "./styles/layout/container.css";
