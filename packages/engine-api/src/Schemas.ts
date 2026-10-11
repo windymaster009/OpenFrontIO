@@ -39,6 +39,8 @@ export type Intent =
   | EmbargoIntent
   | QuickChatIntent
   | MoveWarshipIntent
+  | DeployInfantryIntent
+  | MoveInfantryIntent
   | MarkDisconnectedIntent
   | EmbargoAllIntent
   | UpgradeStructureIntent
@@ -67,6 +69,8 @@ export type UpgradeStructureIntent = z.infer<
   typeof UpgradeStructureIntentSchema
 >;
 export type MoveWarshipIntent = z.infer<typeof MoveWarshipIntentSchema>;
+export type DeployInfantryIntent = z.infer<typeof DeployInfantryIntentSchema>;
+export type MoveInfantryIntent = z.infer<typeof MoveInfantryIntentSchema>;
 export type QuickChatIntent = z.infer<typeof QuickChatIntentSchema>;
 export type MarkDisconnectedIntent = z.infer<
   typeof MarkDisconnectedIntentSchema
@@ -503,6 +507,18 @@ export const MoveWarshipIntentSchema = z.object({
   tile: zb.uint(),
 });
 
+// Opt-in solo Grand Strategy orders; parsed on the same deterministic wire.
+export const DeployInfantryIntentSchema = z.object({
+  type: z.literal("deploy_infantry"),
+  tile: zb.uint(),
+});
+
+export const MoveInfantryIntentSchema = z.object({
+  type: z.literal("move_infantry"),
+  unitId: zb.uint(),
+  tile: zb.uint(),
+});
+
 export const DeleteUnitIntentSchema = z.object({
   type: z.literal("delete_unit"),
   unitId: zb.uint(),
@@ -568,6 +584,8 @@ export const IntentSchema = z.discriminatedUnion("type", [
   EmbargoIntentSchema,
   EmbargoAllIntentSchema,
   MoveWarshipIntentSchema,
+  DeployInfantryIntentSchema,
+  MoveInfantryIntentSchema,
   QuickChatIntentSchema,
   AllianceExtensionIntentSchema,
   DeleteUnitIntentSchema,
