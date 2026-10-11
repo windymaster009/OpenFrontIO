@@ -247,6 +247,7 @@ export class Config {
           upgradable: true,
         };
         break;
+      case UnitType.InfantryDivision:
       case UnitType.TransportShip:
       case UnitType.SAMMissile:
       case UnitType.AtomBomb:
