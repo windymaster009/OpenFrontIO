@@ -1,4 +1,8 @@
 import { css, html, LitElement, nothing } from "lit";
+import { Cell, GameType, UnitType } from "@openfront/engine-api/game/GameTypes";
+import { EventBus } from "@openfront/shared/EventBus";
+import type { TransformHandler } from "../../TransformHandler";
+import { DeployInfantryIntentEvent, MoveInfantryIntentEvent } from "../../Transport";
 import { customElement, property, state } from "lit/decorators.js";
 import type { GameView } from "../../view";
 import {
@@ -29,6 +33,11 @@ import {
 export class GrandStrategyCommand extends LitElement {
   @property({ attribute: false }) public game: GameView | null = null;
   @property({ attribute: false }) public open = false;
+  @property({ attribute: false }) public eventBus: EventBus | null = null;
+  @property({ attribute: false }) public transformHandler: TransformHandler | null = null;
+  @state() private pendingOrder: "deploy" | "move" | null = null;
+  @state() private selectedLiveDivision: number | null = null;
+  @state() private orderMessage = "";
   @state() private roster: ArmyRoster = emptyArmyRoster();
   @state() private selectedArmyId: string | null = null;
 
@@ -37,6 +46,9 @@ export class GrandStrategyCommand extends LitElement {
     this.open = false;
     this.selectedArmyId = null;
     this.roster = emptyArmyRoster();
+    this.pendingOrder = null;
+    this.selectedLiveDivision = null;
+    this.orderMessage = "";
   }
 
   private closePanel(): void {
@@ -46,6 +58,51 @@ export class GrandStrategyCommand extends LitElement {
         bubbles: true,
         composed: true,
       }),
+    );
+  }
+
+  get isLiveMode(): boolean {
+    return this.game?.config().gameConfig().grandStrategy === true &&
+      this.game?.config().gameConfig().gameType === GameType.Singleplayer;
+  }
+
+  /** Called by the established map input/transform lifecycle. */
+  public handleMapClick(screenX: number, screenY: number): void {
+    if (!this.open || !this.pendingOrder || !this.isLiveMode ||
+        !this.game || !this.transformHandler || !this.eventBus) return;
+    const coords = this.transformHandler.screenToWorldCoordinates(screenX, screenY);
+    if (!this.game.isValidCoord(coords.x, coords.y)) return;
+    const tile = this.game.ref(coords.x, coords.y);
+    const player = this.game.myPlayer();
+    if (!player || this.game.ownerID(tile) !== player.smallID() ||
+        !this.game.isLand(tile) || this.game.isImpassable(tile)) {
+      this.orderMessage = "Select passable land that belongs to your nation.";
+      return;
+    }
+    if (this.pendingOrder === "deploy") {
+      if (player.troops() < 3000) {
+        this.orderMessage = "You need 3,000 available troops to deploy.";
+        return;
+      }
+      this.eventBus.emit(new DeployInfantryIntentEvent(tile));
+      this.orderMessage = "Deployment requested. Awaiting engine validation.";
+    } else if (this.selectedLiveDivision !== null) {
+      this.eventBus.emit(new MoveInfantryIntentEvent(this.selectedLiveDivision, tile));
+      this.orderMessage = "Movement requested. Route must stay in friendly land.";
+    }
+    this.pendingOrder = null;
+  }
+
+  /** Keeps DOM counters attached to authoritative GameView units. */
+  public refreshMarkers(): void {
+    if (this.isLiveMode) this.requestUpdate();
+  }
+
+  private get liveDivisions() {
+    const player = this.game?.myPlayer();
+    if (!player || !this.isLiveMode) return [];
+    return this.game!.unitsOwnedBy(player.smallID()).filter(
+      (unit) => unit.type() === UnitType.InfantryDivision,
     );
   }
 
@@ -88,6 +145,31 @@ export class GrandStrategyCommand extends LitElement {
       outline: 2px solid #e1c47d;
       outline-offset: 2px;
     }
+    .counter {
+      position: fixed;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 1080;
+      min-width: 36px;
+      text-align: center;
+      border: 1px solid #e2c77d;
+      background: #222b22ed;
+      color: #ffe5a1;
+      border-radius: 4px;
+      padding: 2px 4px;
+      box-shadow: 0 2px 10px #000a;
+      font: 700 11px/1.2 ui-monospace, monospace;
+    }
+    .live {
+      border: 1px solid #776c4b;
+      background: #1b271e;
+      border-radius: 6px;
+      padding: 10px;
+      margin: 12px 0;
+    }
+    .live .row { margin: 7px 0; }
+    .live strong { color: #e5c984; }
+    .order-active { border-color: #e5c984 !important; color: #e5c984 !important; }
     .panel {
       pointer-events: auto;
       margin-top: 8px;
@@ -147,26 +229,59 @@ export class GrandStrategyCommand extends LitElement {
   `;
 
   render() {
-    // Gameplay-only experimental planning UI; never shown on replays.
-    if (this.game === null || this.game.config().isReplay() || !this.open) return nothing;
+    if (this.game === null || this.game.config().isReplay()) return nothing;
     const visible = divisionsInArmy(this.roster, this.selectedArmyId);
     const selected = this.roster.armies.find((a) => a.id === this.selectedArmyId);
     return html`
-        <section class="panel" id="grand-strategy-panel" aria-label="Military command planner">
+        ${this.isLiveMode && this.transformHandler ? this.liveDivisions.map((division) => {
+          const pos = this.transformHandler!.worldToScreenCoordinates(
+            new Cell(this.game!.x(division.tile()), this.game!.y(division.tile())),
+          );
+          return html`<div class="counter" aria-label="Infantry division ${division.id()}"
+            style="left:${pos.x}px;top:${pos.y}px" title="Infantry ${division.id()}">▣ ${Math.round(division.troops()/1000)}k</div>`;
+        }) : nothing}
+        ${this.open ? html`<section class="panel" id="grand-strategy-panel" aria-label="Military command planner">
           <header>
             <div>
-              <div class="eyebrow">Experimental • Phase 1</div>
+              <div class="eyebrow">Experimental • Phase 2</div>
               <h2>Military High Command</h2>
             </div>
             <button class="subbtn" type="button" @click=${() => this.closePanel()}>Close</button>
           </header>
-          <p class="note">Planning only: formations are local to this match.
-            They do not yet control troops, consume resources, or send orders.</p>
+          <p class="note">Army grouping below is a planning tool; live Infantry above spends manpower and moves in the engine.</p>
           <div class="stats">
             <div class="stat"><strong>${this.roster.armies.length}</strong><span>Armies</span></div>
             <div class="stat"><strong>${this.roster.divisions.length}</strong><span>Divisions</span></div>
             <div class="stat"><strong>${plannedPersonnel(this.roster).toLocaleString()}</strong><span>Planned personnel</span></div>
           </div>
+          ${this.isLiveMode ? html`
+            <div class="live">
+              <div class="eyebrow">Live military · Solo prototype</div>
+              <p class="note">Deploy infantry using 3,000 real troops on owned land. Move through friendly land. No combat yet.</p>
+              <div class="row">
+                <strong>${this.liveDivisions.length} deployed infantry divisions</strong>
+                <button class="subbtn ${this.pendingOrder === "deploy" ? "order-active" : ""}"
+                  ?disabled=${this.game!.inSpawnPhase() || !this.game!.myPlayer()?.isAlive()}
+                  @click=${() => {
+                    this.pendingOrder = this.pendingOrder === "deploy" ? null : "deploy";
+                    this.orderMessage = this.pendingOrder ? "Click your territory on the map to deploy." : "";
+                  }}>Deploy Infantry (3k)</button>
+              </div>
+              ${this.liveDivisions.map((unit) => html`
+                <div class="row">
+                  <span>▣ Infantry #${unit.id()} · ${unit.troops().toLocaleString()} soldiers</span>
+                  <button class="subbtn ${this.pendingOrder === "move" && this.selectedLiveDivision === unit.id() ? "order-active" : ""}"
+                    @click=${() => {
+                      this.selectedLiveDivision = unit.id();
+                      this.pendingOrder = "move";
+                      this.orderMessage = "Click a destination on YOUR territory.";
+                    }}>Move</button>
+                </div>
+              `)}
+              ${this.orderMessage ? html`<p class="note" role="status">${this.orderMessage}</p>` : nothing}
+              ${this.pendingOrder ? html`<button class="subbtn" @click=${() => { this.pendingOrder=null; this.orderMessage=""; }}>Cancel order</button>` : nothing}
+            </div>
+          ` : html`<p class="note">For live infantry, enable Grand Strategy when starting a Solo match.</p>`}
           <div class="heading">
             <strong>Army groups</strong>
             <button class="subbtn" type="button" ?disabled=${this.roster.armies.length >= MAX_PLANNED_ARMIES}
@@ -219,7 +334,7 @@ export class GrandStrategyCommand extends LitElement {
               </div>
             </div>
           `) : html`<p class="empty">No divisions here yet. Add a template or assign one from another army.</p>`}
-        </section>
+        </section>` : nothing}
     `;
   }
 }
