@@ -97,11 +97,6 @@ describe("GameLeftSidebar", () => {
         isReplay: () => false,
       }),
     } as unknown as GameView;
-    const planner = document.createElement("grand-strategy-command") as
-      HTMLElement & { togglePanel: ReturnType<typeof vi.fn> };
-    planner.togglePanel = vi.fn();
-    document.body.append(planner);
-
     const sidebar = new GameLeftSidebar();
     sidebar.game = game;
     sidebar.eventBus = new EventBus();
@@ -113,11 +108,27 @@ describe("GameLeftSidebar", () => {
     ) as HTMLButtonElement | null;
     expect(commandButton).not.toBeNull();
     expect(commandButton?.textContent).toContain("Command");
+    const planner = sidebar.querySelector("grand-strategy-command") as
+      HTMLElement & { open: boolean; updateComplete: Promise<boolean> };
+    expect(planner).not.toBeNull();
+    expect(planner.open).toBe(false);
     commandButton?.click();
-    expect(planner.togglePanel).toHaveBeenCalledOnce();
+    await sidebar.updateComplete;
+    await planner.updateComplete;
+    expect(commandButton?.getAttribute("aria-expanded")).toBe("true");
+    expect(planner.open).toBe(true);
+    expect(planner.shadowRoot?.querySelector(".panel")?.textContent).toContain(
+      "Military High Command",
+    );
+
+    // Closing the panel through its own Close button updates the toolbar state.
+    (planner.shadowRoot?.querySelector(".subbtn") as HTMLButtonElement).click();
+    await sidebar.updateComplete;
+    await planner.updateComplete;
+    expect(planner.open).toBe(false);
+    expect(planner.shadowRoot?.querySelector(".panel")).toBeNull();
 
     sidebar.remove();
-    planner.remove();
   });
 
   it("hides the Command button in replays", async () => {
