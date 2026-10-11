@@ -101,6 +101,7 @@ const DEFAULT_OPTIONS = {
   bots: 400,
   infiniteGold: false,
   infiniteTroops: false,
+  grandStrategy: false,
   compactMap: false,
   maxTimer: false,
   maxTimerValue: undefined as number | undefined,
@@ -177,6 +178,7 @@ export class SinglePlayerModal extends BaseModal {
   @state() private bots: number = DEFAULT_OPTIONS.bots;
   @state() private infiniteGold: boolean = DEFAULT_OPTIONS.infiniteGold;
   @state() private infiniteTroops: boolean = DEFAULT_OPTIONS.infiniteTroops;
+  @state() private grandStrategy: boolean = DEFAULT_OPTIONS.grandStrategy;
   @state() private compactMap: boolean = DEFAULT_OPTIONS.compactMap;
   @state() private maxTimer: boolean = DEFAULT_OPTIONS.maxTimer;
   @state() private maxTimerValue: number | undefined =
@@ -492,6 +494,11 @@ export class SinglePlayerModal extends BaseModal {
         <div
           class="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-6 pt-4 pb-6 mr-1 mx-auto w-full max-w-5xl"
         >
+          <label class="mb-4 flex items-start gap-3 rounded-lg border border-amber-500/40 bg-amber-900/20 p-3 text-amber-100">
+            <input type="checkbox" aria-label="Enable experimental Grand Strategy" .checked=${this.grandStrategy}
+              @change=${(e: Event) => (this.grandStrategy = (e.currentTarget as HTMLInputElement).checked)} />
+            <span><strong>Grand Strategy (experimental)</strong><small class="block text-xs text-amber-100/70">Solo mode only. Enables real infantry deployment and movement on owned territory; no combat or frontlines yet.</small></span>
+          </label>
           <game-config-settings
             class="block"
             .sectionGapClass=${"space-y-6"}
@@ -609,6 +616,7 @@ export class SinglePlayerModal extends BaseModal {
       this.bots !== DEFAULT_OPTIONS.bots ||
       this.infiniteGold !== DEFAULT_OPTIONS.infiniteGold ||
       this.infiniteTroops !== DEFAULT_OPTIONS.infiniteTroops ||
+      this.grandStrategy !== DEFAULT_OPTIONS.grandStrategy ||
       this.compactMap !== DEFAULT_OPTIONS.compactMap ||
       this.maxTimer !== DEFAULT_OPTIONS.maxTimer ||
       this.instantBuild !== DEFAULT_OPTIONS.instantBuild ||
@@ -681,6 +689,7 @@ export class SinglePlayerModal extends BaseModal {
     this.defaultNationCount = 0;
     this.infiniteGold = DEFAULT_OPTIONS.infiniteGold;
     this.infiniteTroops = DEFAULT_OPTIONS.infiniteTroops;
+    this.grandStrategy = DEFAULT_OPTIONS.grandStrategy;
     this.compactMap = DEFAULT_OPTIONS.compactMap;
     this.maxTimer = DEFAULT_OPTIONS.maxTimer;
     this.maxTimerValue = DEFAULT_OPTIONS.maxTimerValue;
@@ -1146,6 +1155,7 @@ export class SinglePlayerModal extends BaseModal {
                   : GameMapSize.Normal,
                 gameType: GameType.Singleplayer,
                 gameMode: this.gameMode,
+                grandStrategy: this.grandStrategy,
                 playerTeams: this.teamCount,
                 difficulty: this.selectedDifficulty,
                 maxTimerValue: finalMaxTimerValue,
