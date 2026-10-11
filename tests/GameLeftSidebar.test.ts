@@ -16,7 +16,7 @@ describe("GameLeftSidebar", () => {
 
   it("owns the player and team stats tables", async () => {
     const game = {
-      config: () => ({ gameConfig: () => ({ gameMode: GameMode.Team }) }),
+      config: () => ({ isReplay: () => false, gameConfig: () => ({ gameMode: GameMode.Team }) }),
     } as unknown as GameView;
     const eventBus = new EventBus();
     const sidebar = new GameLeftSidebar();
@@ -56,6 +56,7 @@ describe("GameLeftSidebar", () => {
     } as unknown as PlayerView;
     const game = {
       config: () => ({
+        isReplay: () => false,
         gameConfig: () => ({ gameMode: GameMode.FFA }),
         maxTroops: () => 1_000,
       }),
@@ -89,9 +90,54 @@ describe("GameLeftSidebar", () => {
     sidebar.remove();
   });
 
+  it("exposes the Grand Strategy button in the working game toolbar", async () => {
+    const game = {
+      config: () => ({
+        gameConfig: () => ({ gameMode: GameMode.FFA }),
+        isReplay: () => false,
+      }),
+    } as unknown as GameView;
+    const planner = document.createElement("grand-strategy-command") as
+      HTMLElement & { togglePanel: ReturnType<typeof vi.fn> };
+    planner.togglePanel = vi.fn();
+    document.body.append(planner);
+
+    const sidebar = new GameLeftSidebar();
+    sidebar.game = game;
+    sidebar.eventBus = new EventBus();
+    document.body.append(sidebar);
+    await sidebar.updateComplete;
+
+    const commandButton = sidebar.querySelector(
+      '[data-testid="grand-strategy-open"]',
+    ) as HTMLButtonElement | null;
+    expect(commandButton).not.toBeNull();
+    expect(commandButton?.textContent).toContain("Command");
+    commandButton?.click();
+    expect(planner.togglePanel).toHaveBeenCalledOnce();
+
+    sidebar.remove();
+    planner.remove();
+  });
+
+  it("hides the Command button in replays", async () => {
+    const game = {
+      config: () => ({
+        gameConfig: () => ({ gameMode: GameMode.FFA }),
+        isReplay: () => true,
+      }),
+    } as unknown as GameView;
+    const sidebar = new GameLeftSidebar();
+    sidebar.game = game;
+    document.body.append(sidebar);
+    await sidebar.updateComplete;
+    expect(sidebar.querySelector('[data-testid="grand-strategy-open"]')).toBeNull();
+    sidebar.remove();
+  });
+
   it("stacks the player and team stats tables vertically at every width", async () => {
     const game = {
-      config: () => ({ gameConfig: () => ({ gameMode: GameMode.Team }) }),
+      config: () => ({ isReplay: () => false, gameConfig: () => ({ gameMode: GameMode.Team }) }),
     } as unknown as GameView;
     const sidebar = new GameLeftSidebar();
     sidebar.game = game;
