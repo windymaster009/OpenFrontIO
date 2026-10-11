@@ -6,7 +6,7 @@ authoritative and unchanged; no new multiplayer game mode or rules are activated
 
 ## What works now
 
-- In any non-replay game, click **Grand Strategy** near the upper-left of the map.
+- In any non-replay game, click **⚑ Command** in the upper-left leaderboard toolbar. The military planner opens beside the leaderboard.
 - Create up to 12 armies, rename armies, and disband them.
 - Add up to 120 planned infantry, armored, artillery, or recon divisions.
 - Group divisions into armies or move them to the unassigned reserve.
@@ -44,7 +44,7 @@ Run from the repo root with Node 24.15+ and npm 12.1+:
 
 ```bash
 npm run inst
-npx vitest run tests/client/GrandStrategyArmyModel.test.ts tests/client/GrandStrategyCommand.test.ts
+npx vitest run tests/client/GrandStrategyArmyModel.test.ts tests/client/GrandStrategyCommand.test.ts tests/GameLeftSidebar.test.ts
 npm run typecheck
 npm run dev
 ```
