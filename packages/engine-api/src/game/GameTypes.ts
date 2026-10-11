@@ -191,7 +191,6 @@ function unitTypeGroup<T extends readonly UnitType[]>(types: T) {
 
 export enum UnitType {
   TransportShip = "Transport",
-  InfantryDivision = "Infantry Division",
   Warship = "Warship",
   Shell = "Shell",
   SAMMissile = "SAMMissile",
@@ -207,6 +206,8 @@ export enum UnitType {
   MIRVWarhead = "MIRV Warhead",
   Train = "Train",
   Factory = "Factory",
+  // Append only: wire enum indices for existing unit types must stay stable.
+  InfantryDivision = "Infantry Division",
 }
 
 export enum TrainType {
