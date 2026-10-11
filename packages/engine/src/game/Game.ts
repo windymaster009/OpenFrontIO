@@ -54,6 +54,7 @@ export interface OwnerComp {
 }
 
 export interface UnitParamsMap {
+  [UnitType.InfantryDivision]: { troops: number };
   [UnitType.TransportShip]: {
     troops?: number;
     targetTile?: TileRef;
