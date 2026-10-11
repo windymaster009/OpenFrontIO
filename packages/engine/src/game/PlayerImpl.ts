@@ -1611,6 +1611,11 @@ export class PlayerImpl implements Player {
         return canBuildTransportShip(this.mg, this, targetTile);
       case UnitType.TradeShip:
         return this.tradeShipSpawn(targetTile);
+      case UnitType.InfantryDivision:
+        return this.mg.owner(targetTile) === this &&
+          this.mg.isLand(targetTile) && !this.mg.isImpassable(targetTile)
+          ? targetTile
+          : false;
       case UnitType.Train:
         return this.landBasedUnitSpawn(targetTile);
       case UnitType.MissileSilo:
