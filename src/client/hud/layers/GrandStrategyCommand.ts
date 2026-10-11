@@ -38,6 +38,20 @@ export class GrandStrategyCommand extends LitElement implements Controller {
     this.expanded = false;
     this.selectedArmyId = null;
     this.roster = emptyArmyRoster();
+    this.style.display = "none";
+  }
+
+  /** Invoked by the existing, always-visible in-game leaderboard toolbar. */
+  public togglePanel(): void {
+    if (this.game === null || this.game.config().isReplay()) return;
+    this.expanded = !this.expanded;
+    // Keep the host visible even when a generated utility class hides it.
+    this.style.display = this.expanded ? "block" : "none";
+  }
+
+  private closePanel(): void {
+    this.expanded = false;
+    this.style.display = "none";
   }
 
   private createArmy(): void {
@@ -79,17 +93,6 @@ export class GrandStrategyCommand extends LitElement implements Controller {
     button:focus-visible, input:focus-visible, select:focus-visible {
       outline: 2px solid #e1c47d;
       outline-offset: 2px;
-    }
-    .launcher {
-      pointer-events: auto;
-      border: 1px solid #a28a54;
-      background: linear-gradient(145deg, #28342a, #131b17);
-      color: #f3dc96;
-      font-weight: 800;
-      letter-spacing: .07em;
-      border-radius: 6px;
-      padding: 10px 14px;
-      box-shadow: 0 6px 22px #0009;
     }
     .panel {
       pointer-events: auto;
@@ -150,26 +153,18 @@ export class GrandStrategyCommand extends LitElement implements Controller {
   `;
 
   render() {
-    // No control layer for spectators viewing a replay.
-    if (this.game === null || this.game.config().isReplay()) return nothing;
+    // Gameplay-only experimental planning UI; never shown on replays.
+    if (this.game === null || this.game.config().isReplay() || !this.expanded) return nothing;
     const visible = divisionsInArmy(this.roster, this.selectedArmyId);
     const selected = this.roster.armies.find((a) => a.id === this.selectedArmyId);
     return html`
-      <button
-        class="launcher"
-        type="button"
-        aria-expanded=${this.expanded}
-        aria-controls="grand-strategy-panel"
-        @click=${() => (this.expanded = !this.expanded)}
-      >${this.expanded ? "✕ Close Command" : "⚑ Grand Strategy"}</button>
-      ${this.expanded ? html`
         <section class="panel" id="grand-strategy-panel" aria-label="Military command planner">
           <header>
             <div>
               <div class="eyebrow">Experimental • Phase 1</div>
               <h2>Military High Command</h2>
             </div>
-            <button class="subbtn" type="button" @click=${() => (this.expanded = false)}>Close</button>
+            <button class="subbtn" type="button" @click=${() => this.closePanel()}>Close</button>
           </header>
           <p class="note">Planning only: formations are local to this match.
             They do not yet control troops, consume resources, or send orders.</p>
@@ -231,7 +226,6 @@ export class GrandStrategyCommand extends LitElement implements Controller {
             </div>
           `) : html`<p class="empty">No divisions here yet. Add a template or assign one from another army.</p>`}
         </section>
-      ` : nothing}
     `;
   }
 }
