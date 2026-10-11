@@ -10,6 +10,9 @@ import { Platform } from "../../Platform";
 import { themeProvider } from "../../theme/ThemeProvider";
 import { getTranslatedPlayerTeamLabel, translateText } from "../../Utils";
 import type { GameView } from "../../view";
+import { MouseUpEvent } from "../../InputHandler";
+import type { TransformHandler } from "../../TransformHandler";
+import type { GrandStrategyCommand } from "./GrandStrategyCommand";
 import "./GrandStrategyCommand";
 import { ImmunityBarVisibleEvent } from "./ImmunityTimer";
 import "./PlayerStats";
@@ -48,6 +51,8 @@ export class GameLeftSidebar extends LitElement implements Controller {
   private playerColor: Colord = new Colord("#FFFFFF");
   @property({ attribute: false }) public game: GameView | null = null;
   @property({ attribute: false }) public eventBus: EventBus | null = null;
+  @property({ attribute: false }) public transformHandler: TransformHandler | null = null;
+  @query("grand-strategy-command") private commandPanel?: GrandStrategyCommand;
   @query("player-stats") private playerStats?: PlayerStats;
   @query("team-stats") private teamStats?: TeamStats;
   private showPlayerStatsAfterSpawn = false;
@@ -61,6 +66,9 @@ export class GameLeftSidebar extends LitElement implements Controller {
     // A new match creates a fresh local planner, with no stale army roster.
     this.commandOpen = false;
     this.commandGeneration++;
+    this.eventBus?.on(MouseUpEvent, (e) => {
+      if (this.commandOpen) this.commandPanel?.handleMapClick(e.x, e.y);
+    });
     this.eventBus?.on(SpawnBarVisibleEvent, (e) => {
       this.spawnBarVisible = e.visible;
     });
@@ -98,6 +106,7 @@ export class GameLeftSidebar extends LitElement implements Controller {
       this.isPlayerTeamLabelVisible = false;
     }
 
+    this.commandPanel?.refreshMarkers();
     this.playerStats?.refresh();
     this.teamStats?.refresh();
   }
@@ -247,6 +256,8 @@ export class GameLeftSidebar extends LitElement implements Controller {
         this.commandGeneration,
         html`<grand-strategy-command
           .game=${this.game}
+          .eventBus=${this.eventBus}
+          .transformHandler=${this.transformHandler}
           .open=${this.commandOpen}
           @grand-strategy-close=${() => (this.commandOpen = false)}
         ></grand-strategy-command>`,
